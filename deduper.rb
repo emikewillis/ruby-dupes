@@ -1,5 +1,38 @@
 #!/usr/bin/env ruby
-require 'digest/md5'
+require 'optparse'
+require 'digest'
+
+$options = { :directories => [ Dir.pwd ],
+	     :threads => 1,
+	     :recurse => false,
+	     :recurse_depth => 0,
+	     :scope => :local,
+	     :crypto => Digest::MD5,
+	     :delimited_print => false,
+	     :keep => :old }
+
+parse = OptionParser.new do |opts|
+  opts.banner = "Usage: dupes.rb [options] [directories]"
+
+  opts.on( '-c', '--crypto crypto','Hashing Function') do |crypto|
+    sym = crypto.upcase.to_sym
+    $options[:crypto] = Digest.const_missing sym
+  end
+
+  opts.on('-o','--keep-oldest', 'Don\'t print oldest duplicates') do
+    $options[:keep] = :old
+  end
+
+  opts.on('-y','--keep-youngest', 'Don\'t print youngest duplicates') do
+    $options[:keep] = :young
+  end
+
+  opts.on('-a','--keep-all', 'Print all duplicates') do
+    $options[:keep] = :all
+  end
+end
+
+parse.parse!
 
 # Features to add:
 # arguments used as a list of directories
@@ -36,8 +69,18 @@ dupe_filenames = files.select do |k,v|
 end.map do |k,v|
   v.sort_by do |filename|
     File.ctime(filename).to_i
-  end[1..-1]
+  end
 end.flatten
+
+case $options[:keep]
+when :old
+  dupe_filenames = dupe_filenames.drop(1)
+when :young
+  dupe_filenames = dupe_filenames[0...-1]
+when :all
+  # do nothing
+end
+
 
 dupe_filenames.each do |filename|
   puts filename
