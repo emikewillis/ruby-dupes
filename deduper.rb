@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 require 'digest/md5'
 
 #unless ARGV.size > 0
@@ -10,7 +11,8 @@ require 'digest/md5'
 
 files = {}
 
-Dir['*.*'].each do |filename|
+# Build a hashmap of hashes and filenames of files with matching hashes
+Dir['*'].each do |filename|
   chksm = Digest::MD5.hexdigest(File.read(filename))
   unless files[chksm]
     files[chksm] = []
@@ -18,11 +20,14 @@ Dir['*.*'].each do |filename|
   files[chksm] << filename
 end
 
-files.select do |k,v|
+dupe_filenames = files.select do |k,v|
   v.size > 1
-end.each do  |k,v|
-  puts "Hash #{k} is shared by the files:"
-  v.each_with_index do |filename,i|
-    puts "(#{i+1}) #{filename}"
-  end
+end.map do |k,v|
+  v.sort_by do |filename|
+    File.ctime(filename).to_i
+  end[1..-1]
+end.flatten
+
+dupe_filenames.each do |filename|
+  print filename + ' '
 end
