@@ -14,21 +14,26 @@ $options = { :directories => [ Dir.pwd ],
 parse = OptionParser.new do |opts|
   opts.banner = "Usage: dupes.rb [options] [directories]"
 
-  opts.on( '-c', '--crypto crypto','Hashing Function') do |crypto|
+  opts.on( '-c', '--crypto crypto', 'Hashing Function') do |crypto|
     sym = crypto.upcase.to_sym
     $options[:crypto] = Digest.const_missing sym
   end
 
-  opts.on('-o','--keep-oldest', 'Don\'t print oldest duplicates') do
+  opts.on('-o', '--keep-oldest', 'Don\'t print oldest duplicates') do
     $options[:keep] = :old
   end
 
-  opts.on('-y','--keep-youngest', 'Don\'t print youngest duplicates') do
+  opts.on('-y', '--keep-youngest', 'Don\'t print youngest duplicates') do
     $options[:keep] = :young
   end
 
-  opts.on('-a','--keep-all', 'Print all duplicates') do
+  opts.on('-a', '--keep-all', 'Print all duplicates') do
     $options[:keep] = :all
+  end
+
+  opts.on('-h', '--help', 'Shows Help') do
+    puts opts
+    exit
   end
 end
 
