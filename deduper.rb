@@ -1,6 +1,17 @@
 #!/usr/bin/env ruby
 require 'digest/md5'
 
+# Features to add:
+# arguments used as a list of directories
+# -X num_of_threads multi-threaded checksumming
+# -R descend into directories to find dupes
+# -r max_depth
+# -l -g or --local --global  option to check for dupes between all directories or only within a directory
+# -c algo other hashing algos
+# -flist option to dump delimited lists of matching files
+# -n don't print newest copies
+# -o don't print oldest copies
+
 #unless ARGV.size > 0
 #  print "Operate on current directory <#{Dir.pwd}>? (Y/n) "
 #  unless gets.chomp == 'Y'
@@ -29,5 +40,5 @@ end.map do |k,v|
 end.flatten
 
 dupe_filenames.each do |filename|
-  print filename + ' '
+  puts filename
 end
