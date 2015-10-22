@@ -6,7 +6,7 @@ require 'pry'
 $options = { :directories => [ Dir.pwd ],
 	     :threads => 1,
 	     :recurse => false,
-	     :recurse_depth => 0,
+	     :recurse_depth => -1,
 	     :scope => :local,
 	     :crypto => Digest::MD5,
 	     :delimited_print => false,
@@ -54,6 +54,9 @@ parse = OptionParser.new do |opts|
     $options[:recurse] = true 
   end
 
+  opts.on( '-d', '--depth depth', 'How many subdirectories deep to search. -1 for no limit (default)') do |depth|
+    $options[:recurse_depth] = depth.to_i
+  end
 end
 
 parse.parse!
