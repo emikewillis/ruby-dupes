@@ -9,7 +9,8 @@ $options = { :directories => [ Dir.pwd ],
 	     :scope => :local,
 	     :crypto => Digest::MD5,
 	     :delimited_print => false,
-	     :keep => :old }
+	     :keep => :old,
+	     :read_hidden => false }
 
 parse = OptionParser.new do |opts|
   opts.banner = "Usage: dupes.rb [options] [directories]"
@@ -27,7 +28,7 @@ parse = OptionParser.new do |opts|
     $options[:keep] = :young
   end
 
-  opts.on('-a', '--keep-all', 'Print all duplicates') do
+  opts.on('-A', '--keep-all', 'Print all duplicates') do
     $options[:keep] = :all
   end
 
@@ -35,6 +36,19 @@ parse = OptionParser.new do |opts|
     puts opts
     exit
   end
+
+  opts.on('-G', '--global', 'Detect duplicates across all folders') do
+    $options[:scope] = :global
+  end
+
+  opts.on('-L', '--local', 'Detect duplicates for each directory seperately') do
+    $options[:scope] = :local
+  end
+
+  opts.on('-a', '--all', 'Read hidden files and folders') do
+    $options[:read_hidden] = true 
+  end
+
 end
 
 parse.parse!
@@ -45,25 +59,42 @@ parse.parse!
 # -R descend into directories to find dupes
 # -r max_depth
 # -l -g or --local --global  option to check for dupes between all directories or only within a directory
-# -c algo other hashing algos
 # -flist option to dump delimited lists of matching files
-# -n don't print newest copies
-# -o don't print oldest copies
-
-#unless ARGV.size > 0
-#  print "Operate on current directory <#{Dir.pwd}>? (Y/n) "
-#  unless gets.chomp == 'Y'
-#    abort
-#  end
-#  ARGV << Dir.pwd
-#end
 
 files = {}
+directories = ARGV
+if directories.empty?
+  directories << Dir.pwd + '/'
+end
+
+directories.map! do |dirname|
+  File.expand_path(dirname)
+end.map! do |dir|
+  unless File.ftype(dir) == 'directory'
+    puts "#{dir} is not a directory. Aborting."
+    abort
+  end
+
+  Dir.chdir dir
+
+  Dir.entries(dir).select do |fname| 
+    fname != '.' and fname != '..' and (fname[0] != '.' ? true : $options[:read_hidden])
+  end.map do |fn|
+    fn = File.expand_path(fn)
+    p fn
+    {:fname => fn,
+     :type  => File.ftype(fn)}
+  end
+end
+
+p directories
+exit
 
 # Build a hashmap of hashes and filenames of files with matching hashes
 Dir['*'].each do |filename|
-  chksm = Digest::MD5.hexdigest(File.read(filename))
-  unless files[chksm]
+  #chksm = Digest::MD5.hexdigest(File.read(filename))
+  chksm  = 0
+  unless files[chksm] 
     files[chksm] = []
   end
   files[chksm] << filename
