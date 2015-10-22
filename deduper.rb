@@ -50,8 +50,9 @@ parse = OptionParser.new do |opts|
     $options[:read_hidden] = true 
   end
 
-  opts.on('-r', '--recurse', 'Descend into sub-directories') do
+  opts.on('-r', '--recurse', 'Descend into sub-directories (defaults to global scope)') do
     $options[:recurse] = true 
+    $options[:scope] = :global 
   end
 
   opts.on( '-d', '--depth depth', 'How many subdirectories deep to search. -1 for no limit (default)') do |depth|
@@ -60,13 +61,10 @@ parse = OptionParser.new do |opts|
 end
 
 parse.parse!
-
+p $options
 # Features to add:
 # arguments used as a list of directories
 # -X num_of_threads multi-threaded checksumming
-# -R descend into directories to find dupes
-# -r max_depth
-# -l -g or --local --global  option to check for dupes between all directories or only within a directory
 # -flist option to dump delimited lists of matching files
 
 files = {}
