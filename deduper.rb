@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 require 'optparse'
 require 'digest'
+require 'pry'
 
 $options = { :directories => [ Dir.pwd ],
 	     :threads => 1,
@@ -49,6 +50,10 @@ parse = OptionParser.new do |opts|
     $options[:read_hidden] = true 
   end
 
+  opts.on('-r', '--recurse', 'Descend into sub-directories') do
+    $options[:recurse] = true 
+  end
+
 end
 
 parse.parse!
@@ -81,12 +86,20 @@ end.map! do |dir|
     fname != '.' and fname != '..' and (fname[0] != '.' ? true : $options[:read_hidden])
   end.map do |fn|
     fn = File.expand_path(fn)
-    p fn
     {:fname => fn,
      :type  => File.ftype(fn)}
   end
 end
 
+unless $options[:recurse]
+  directories.map! do |directory|
+    directory.select do |entry|
+      entry[:type] == 'file'
+    end
+  end
+end
+
+directories.each{|d| d.each {|f| puts f[:fname] }}
 p directories
 exit
 
